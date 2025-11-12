@@ -30,6 +30,19 @@ const Login = () => {
       return;
     }
 
+    // Simulate login - check if it's a driver account
+    const isDriver = formData.email.includes("driver"); // Mock check
+    const isVerified = Math.random() > 0.3; // Mock verification status
+    
+    if (isDriver && !isVerified) {
+      toast({
+        title: "Verification Pending",
+        description: "Your driver license is still under verification. You'll receive an email once verified.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Simulate login
     toast({
       title: "Success!",
@@ -37,7 +50,7 @@ const Login = () => {
     });
     
     setTimeout(() => {
-      navigate("/search");
+      navigate("/dashboard");
     }, 1000);
   };
 

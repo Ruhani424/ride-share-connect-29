@@ -10,6 +10,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import SearchRides from "./pages/SearchRides";
 import BookRide from "./pages/BookRide";
 import OfferRide from "./pages/OfferRide";
+import Dashboard from "./pages/Dashboard";
+import TrackRide from "./pages/TrackRide";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -30,6 +32,8 @@ const App = () => (
           <Route path="/search" element={<SearchRides />} />
           <Route path="/book/:rideId" element={<BookRide />} />
           <Route path="/offer-ride" element={<OfferRide />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/track/:rideId" element={<TrackRide />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -28,6 +28,9 @@ const Navbar = () => {
             <Link to="/offer-ride" className="text-foreground hover:text-primary transition-colors">
               Offer Ride
             </Link>
+            <Link to="/dashboard" className="text-foreground hover:text-primary transition-colors">
+              Dashboard
+            </Link>
             <Link to="/about" className="text-foreground hover:text-primary transition-colors">
               About
             </Link>
@@ -79,6 +82,13 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Offer Ride
+              </Link>
+              <Link
+                to="/dashboard"
+                className="text-foreground hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Dashboard
               </Link>
               <Link
                 to="/about"

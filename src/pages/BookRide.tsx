@@ -64,13 +64,21 @@ const BookRide = () => {
     }
 
     toast({
-      title: "Booking Confirmed!",
-      description: "Your ride has been booked successfully. Check your email for details.",
+      title: "Payment Processing",
+      description: "Redirecting to payment gateway...",
     });
 
+    // Simulate payment processing
     setTimeout(() => {
-      navigate("/search");
-    }, 2000);
+      toast({
+        title: "Success!",
+        description: "Payment successful! Your ride has been booked. Redirecting to tracking...",
+      });
+      
+      setTimeout(() => {
+        navigate(`/track/${rideId}`);
+      }, 1500);
+    }, 1000);
   };
 
   return (
@@ -146,6 +154,39 @@ const BookRide = () => {
                     <CreditCard className="mr-2 h-5 w-5" />
                     Proceed to Payment
                   </Button>
+                  
+                  <div className="mt-6 p-4 bg-muted rounded-lg">
+                    <p className="text-sm font-medium mb-3">Payment Options</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 p-3 border rounded-lg hover:bg-accent/10 cursor-pointer transition-colors">
+                        <input type="radio" name="payment" id="card" defaultChecked />
+                        <label htmlFor="card" className="flex-1 cursor-pointer">
+                          Credit/Debit Card
+                        </label>
+                      </div>
+                      <div className="flex items-center gap-2 p-3 border rounded-lg hover:bg-accent/10 cursor-pointer transition-colors">
+                        <input type="radio" name="payment" id="upi" />
+                        <label htmlFor="upi" className="flex-1 cursor-pointer">
+                          UPI
+                        </label>
+                      </div>
+                      <div className="flex items-center gap-2 p-3 border rounded-lg hover:bg-accent/10 cursor-pointer transition-colors">
+                        <input type="radio" name="payment" id="wallet" />
+                        <label htmlFor="wallet" className="flex-1 cursor-pointer">
+                          Wallet
+                        </label>
+                      </div>
+                      <div className="flex items-center gap-2 p-3 border rounded-lg hover:bg-accent/10 cursor-pointer transition-colors">
+                        <input type="radio" name="payment" id="cash" />
+                        <label htmlFor="cash" className="flex-1 cursor-pointer">
+                          Cash
+                        </label>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-3 text-center">
+                      🔒 Secure payment gateway powered by Stripe
+                    </p>
+                  </div>
                 </form>
               </CardContent>
             </Card>
