@@ -76,19 +76,30 @@ const AdminDashboard = () => {
   const fetchVerifications = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: verificationsData, error } = await supabase
         .from("driver_verifications")
-        .select(`
-          *,
-          profiles (
-            full_name,
-            phone
-          )
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setVerifications(data || []);
+
+      // Fetch profiles separately and merge
+      if (verificationsData) {
+        const userIds = verificationsData.map((v) => v.user_id);
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, full_name, phone")
+          .in("id", userIds);
+
+        const profilesMap = new Map(profilesData?.map((p) => [p.id, p]) || []);
+        
+        const merged = verificationsData.map((v) => ({
+          ...v,
+          profiles: profilesMap.get(v.user_id) || { full_name: "Unknown", phone: null },
+        }));
+
+        setVerifications(merged);
+      }
     } catch (error: any) {
       toast({
         title: "Error",

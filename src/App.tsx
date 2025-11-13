@@ -12,6 +12,8 @@ import BookRide from "./pages/BookRide";
 import OfferRide from "./pages/OfferRide";
 import Dashboard from "./pages/Dashboard";
 import TrackRide from "./pages/TrackRide";
+import VerifyEmail from "./pages/VerifyEmail";
+import AdminDashboard from "./pages/AdminDashboard";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -34,6 +36,8 @@ const App = () => (
           <Route path="/offer-ride" element={<OfferRide />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/track/:rideId" element={<TrackRide />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
