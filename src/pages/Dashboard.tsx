@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { RatingDialog } from "@/components/RatingDialog";
 import { Calendar, MapPin, Users, IndianRupee, Star, Clock, Navigation } from "lucide-react";
 
 interface RideHistory {
@@ -185,6 +186,8 @@ const Dashboard = () => {
 };
 
 const RideCard = ({ ride }: { ride: RideHistory }) => {
+  const [showRatingDialog, setShowRatingDialog] = useState(false);
+  
   const statusColors = {
     completed: "bg-success text-success-foreground",
     upcoming: "bg-accent text-accent-foreground",
@@ -192,6 +195,15 @@ const RideCard = ({ ride }: { ride: RideHistory }) => {
   };
 
   return (
+    <>
+      <RatingDialog
+        open={showRatingDialog}
+        onOpenChange={setShowRatingDialog}
+        rideId={ride.id}
+        toUserId={ride.type === "passenger" ? "driver-user-id" : "passenger-user-id"}
+        toUserName={ride.type === "passenger" ? ride.driverName || "Driver" : "Passenger"}
+        userType={ride.type === "passenger" ? "driver" : "passenger"}
+      />
     <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
@@ -255,13 +267,18 @@ const RideCard = ({ ride }: { ride: RideHistory }) => {
             </Link>
           )}
           {ride.status === "completed" && !ride.rating && (
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowRatingDialog(true)}
+            >
               Rate Ride
             </Button>
           )}
         </div>
       </CardContent>
     </Card>
+    </>
   );
 };
 

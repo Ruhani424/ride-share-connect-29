@@ -22,12 +22,6 @@ const Navbar = () => {
             <Link to="/" className="text-foreground hover:text-primary transition-colors">
               Home
             </Link>
-            <Link to="/search" className="text-foreground hover:text-primary transition-colors">
-              Search Rides
-            </Link>
-            <Link to="/offer-ride" className="text-foreground hover:text-primary transition-colors">
-              Offer Ride
-            </Link>
             <Link to="/dashboard" className="text-foreground hover:text-primary transition-colors">
               Dashboard
             </Link>
@@ -41,11 +35,11 @@ const Navbar = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login">
-              <Button variant="ghost">Login</Button>
+            <Link to="/offer-ride">
+              <Button>Offer Ride</Button>
             </Link>
-            <Link to="/signup">
-              <Button>Sign Up</Button>
+            <Link to="/login">
+              <Button variant="secondary">Login</Button>
             </Link>
           </div>
 
@@ -70,20 +64,6 @@ const Navbar = () => {
                 Home
               </Link>
               <Link
-                to="/search"
-                className="text-foreground hover:text-primary transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Search Rides
-              </Link>
-              <Link
-                to="/offer-ride"
-                className="text-foreground hover:text-primary transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Offer Ride
-              </Link>
-              <Link
                 to="/dashboard"
                 className="text-foreground hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
@@ -105,11 +85,11 @@ const Navbar = () => {
                 Contact
               </Link>
               <div className="flex flex-col space-y-2 pt-4 border-t border-border">
-                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full">Login</Button>
+                <Link to="/offer-ride" onClick={() => setIsMenuOpen(false)}>
+                  <Button className="w-full">Offer Ride</Button>
                 </Link>
-                <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full">Sign Up</Button>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="secondary" className="w-full">Login</Button>
                 </Link>
               </div>
             </div>
