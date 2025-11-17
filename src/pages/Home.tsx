@@ -61,7 +61,7 @@ const Home = () => {
                 <div className="text-center mt-4 ">
                   <Link to="/offer-ride">
                     <Button className="w-full bg-purple-700 text-white hover:bg-purple-500" size="lg">
-                      Offer ride
+                      Offer Rides
                     </Button>
                   </Link>
                 </div>
