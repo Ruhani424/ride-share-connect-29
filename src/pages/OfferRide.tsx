@@ -9,10 +9,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const OfferRide = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     from: "",
     to: "",
@@ -31,26 +33,138 @@ const OfferRide = () => {
     luggage: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
+    // Validate required fields
     if (!formData.from || !formData.to || !formData.date || !formData.time || !formData.seats || !formData.price) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
         variant: "destructive",
       });
+      setIsLoading(false);
       return;
     }
 
-    toast({
-      title: "Ride Posted Successfully!",
-      description: "Your ride is now visible to passengers",
-    });
+    // Validate seats
+    const seatsNum = parseInt(formData.seats);
+    if (isNaN(seatsNum) || seatsNum < 1 || seatsNum > 6) {
+      toast({
+        title: "Error",
+        description: "Available seats must be between 1 and 6",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
 
-    setTimeout(() => {
-      navigate("/search");
-    }, 2000);
+    // Validate price
+    const priceNum = parseFloat(formData.price);
+    if (isNaN(priceNum) || priceNum < 0) {
+      toast({
+        title: "Error",
+        description: "Price must be a positive number",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to post a ride",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        navigate("/auth");
+        return;
+      }
+
+      // Call Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke("create-ride", {
+        body: {
+          from: formData.from,
+          to: formData.to,
+          date: formData.date,
+          time: formData.time,
+          seats: formData.seats,
+          price: formData.price,
+          vehicleMake: formData.vehicleMake,
+          vehicleModel: formData.vehicleModel,
+          vehicleNumber: formData.vehicleNumber,
+          notes: formData.notes,
+          noSmoking: formData.noSmoking,
+          musicOk: formData.musicOk,
+          ac: formData.ac,
+          petsOk: formData.petsOk,
+          luggage: formData.luggage,
+        },
+      });
+
+      if (error) {
+        console.error("Error creating ride:", error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to post ride. Please try again.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data?.success) {
+        toast({
+          title: "Ride Posted Successfully!",
+          description: "Your ride is now visible to passengers",
+        });
+
+        // Reset form
+        setFormData({
+          from: "",
+          to: "",
+          date: "",
+          time: "",
+          seats: "",
+          price: "",
+          vehicleMake: "",
+          vehicleModel: "",
+          vehicleNumber: "",
+          notes: "",
+          noSmoking: false,
+          musicOk: false,
+          ac: false,
+          petsOk: false,
+          luggage: false,
+        });
+
+        // Navigate to search page
+        setTimeout(() => {
+          navigate("/search");
+        }, 1500);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to post ride. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -76,6 +190,7 @@ const OfferRide = () => {
                       placeholder="Mumbai"
                       value={formData.from}
                       onChange={(e) => setFormData({ ...formData, from: e.target.value })}
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -86,6 +201,7 @@ const OfferRide = () => {
                       placeholder="Pune"
                       value={formData.to}
                       onChange={(e) => setFormData({ ...formData, to: e.target.value })}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -98,6 +214,8 @@ const OfferRide = () => {
                       type="date"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      disabled={isLoading}
+                      min={new Date().toISOString().split('T')[0]}
                     />
                   </div>
 
@@ -108,6 +226,7 @@ const OfferRide = () => {
                       type="time"
                       value={formData.time}
                       onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -127,6 +246,7 @@ const OfferRide = () => {
                       placeholder="3"
                       value={formData.seats}
                       onChange={(e) => setFormData({ ...formData, seats: e.target.value })}
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -136,9 +256,11 @@ const OfferRide = () => {
                       id="price"
                       type="number"
                       min="0"
+                      step="0.01"
                       placeholder="350"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -155,6 +277,7 @@ const OfferRide = () => {
                       placeholder="Honda"
                       value={formData.vehicleMake}
                       onChange={(e) => setFormData({ ...formData, vehicleMake: e.target.value })}
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -165,6 +288,7 @@ const OfferRide = () => {
                       placeholder="City"
                       value={formData.vehicleModel}
                       onChange={(e) => setFormData({ ...formData, vehicleModel: e.target.value })}
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -175,6 +299,7 @@ const OfferRide = () => {
                       placeholder="MH 01 AB 1234"
                       value={formData.vehicleNumber}
                       onChange={(e) => setFormData({ ...formData, vehicleNumber: e.target.value })}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -191,6 +316,7 @@ const OfferRide = () => {
                       onCheckedChange={(checked) =>
                         setFormData({ ...formData, noSmoking: checked as boolean })
                       }
+                      disabled={isLoading}
                     />
                     <label htmlFor="noSmoking" className="text-sm font-medium">
                       No Smoking
@@ -204,6 +330,7 @@ const OfferRide = () => {
                       onCheckedChange={(checked) =>
                         setFormData({ ...formData, musicOk: checked as boolean })
                       }
+                      disabled={isLoading}
                     />
                     <label htmlFor="musicOk" className="text-sm font-medium">
                       Music OK
@@ -217,6 +344,7 @@ const OfferRide = () => {
                       onCheckedChange={(checked) =>
                         setFormData({ ...formData, ac: checked as boolean })
                       }
+                      disabled={isLoading}
                     />
                     <label htmlFor="ac" className="text-sm font-medium">
                       AC Available
@@ -230,6 +358,7 @@ const OfferRide = () => {
                       onCheckedChange={(checked) =>
                         setFormData({ ...formData, petsOk: checked as boolean })
                       }
+                      disabled={isLoading}
                     />
                     <label htmlFor="petsOk" className="text-sm font-medium">
                       Pets OK
@@ -243,6 +372,7 @@ const OfferRide = () => {
                       onCheckedChange={(checked) =>
                         setFormData({ ...formData, luggage: checked as boolean })
                       }
+                      disabled={isLoading}
                     />
                     <label htmlFor="luggage" className="text-sm font-medium">
                       Luggage Space
@@ -260,11 +390,12 @@ const OfferRide = () => {
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   rows={4}
+                  disabled={isLoading}
                 />
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Post Ride
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? "Posting Ride..." : "Post Ride"}
               </Button>
             </form>
           </CardContent>

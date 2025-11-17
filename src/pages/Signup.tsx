@@ -181,7 +181,7 @@ const Signup = () => {
                   <Label htmlFor="name">Full Name *</Label>
                   <Input
                     id="name"
-                    placeholder="John Doe"
+                    placeholder="Name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
@@ -192,7 +192,7 @@ const Signup = () => {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="gmail@.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
@@ -205,7 +205,7 @@ const Signup = () => {
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="+91 9876543210"
+                    placeholder="+91 XXXXXXXXXX"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   />
@@ -252,7 +252,7 @@ const Signup = () => {
                     <Input
                       id="experience"
                       type="number"
-                      placeholder="5"
+                      placeholder="X"
                       value={formData.experience}
                       onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
                     />
