@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Car, Facebook, Twitter, Instagram, Linkedin } from "lucide-react"
-
+// HTML STARTS HERE
 const Footer = () => {
   return (
     <footer className="bg-card border-t border-border">
