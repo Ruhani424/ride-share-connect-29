@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { RatingDialog } from "@/components/RatingDialog";
 import { Calendar, MapPin, Users, IndianRupee, Star, Clock, Navigation } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface RideHistory {
   id: string;
@@ -25,7 +27,70 @@ interface RideHistory {
 }
 
 const Dashboard = () => {
-  const [rideHistory] = useState<RideHistory[]>([
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [rideHistory, setRideHistory] = useState<RideHistory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    checkAuthAndFetchRides();
+  }, []);
+
+  const checkAuthAndFetchRides = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    setCurrentUser(user);
+    await fetchRides(user.id);
+  };
+
+  const fetchRides = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      // Fetch rides where user is either driver or passenger
+      const { data, error } = await supabase
+        .from("rides")
+        .select("*")
+        .or(`driver_id.eq.${userId},passenger_id.eq.${userId}`)
+        .order("date", { ascending: false });
+
+      if (error) throw error;
+
+      // Transform data to match the RideHistory interface
+      const transformedRides: RideHistory[] = (data || []).map((ride) => ({
+        id: ride.id,
+        from: ride.origin,
+        to: ride.destination,
+        date: ride.date,
+        time: ride.time,
+        passengers: ride.passengers,
+        fare: Number(ride.fare),
+        status: ride.status as "completed" | "upcoming" | "cancelled",
+        type: ride.driver_id === userId ? "driver" : "passenger",
+        vehicleModel: ride.vehicle_make && ride.vehicle_model 
+          ? `${ride.vehicle_make} ${ride.vehicle_model} - ${ride.vehicle_number}`
+          : undefined,
+      }));
+
+      setRideHistory(transformedRides);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch rides",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Mock data for initial display (will be replaced by real data)
+  const mockRides = [
     {
       id: "1",
       from: "Mumbai",
@@ -76,7 +141,10 @@ const Dashboard = () => {
       driverName: "Arun Sharma",
       vehicleModel: "Maruti Swift",
     },
-  ]);
+  ];
+
+  // Use real data if available, otherwise show mock data
+  const displayRides = rideHistory.length > 0 ? rideHistory : mockRides;
 
   const completedRides = rideHistory.filter((ride) => ride.status === "completed");
   const upcomingRides = rideHistory.filter((ride) => ride.status === "upcoming");

@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Car, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ForgotPassword = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [step, setStep] = useState<"email" | "otp" | "reset">("email");
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     otp: "",
@@ -17,7 +20,7 @@ const ForgotPassword = () => {
     confirmPassword: "",
   });
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.email) {
@@ -29,14 +32,31 @@ const ForgotPassword = () => {
       return;
     }
 
-    toast({
-      title: "OTP Sent!",
-      description: "Please check your email for the verification code",
-    });
-    setStep("otp");
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-otp", {
+        body: { email: formData.email },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "OTP Sent!",
+        description: "Please check your email for the verification code",
+      });
+      setStep("otp");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send OTP",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleOtpSubmit = (e: React.FormEvent) => {
+  const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.otp || formData.otp.length !== 6) {
@@ -48,14 +68,31 @@ const ForgotPassword = () => {
       return;
     }
 
-    toast({
-      title: "Verified!",
-      description: "OTP verified successfully. Set your new password",
-    });
-    setStep("reset");
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("verify-otp", {
+        body: { email: formData.email, otp: formData.otp },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Verified!",
+        description: "OTP verified successfully. Set your new password",
+      });
+      setStep("reset");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Invalid OTP",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleResetSubmit = (e: React.FormEvent) => {
+  const handleResetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.newPassword || !formData.confirmPassword) {
@@ -76,10 +113,84 @@ const ForgotPassword = () => {
       return;
     }
 
-    toast({
-      title: "Success!",
-      description: "Your password has been reset successfully",
-    });
+    if (formData.newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // First, sign in with a temporary session to reset password
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: "temp", // This will fail but we need it for the flow
+      });
+
+      // Update the user's password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: formData.newPassword,
+      });
+
+      if (updateError) {
+        // If direct update fails, use the admin API through edge function
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+          formData.email,
+          { redirectTo: `${window.location.origin}/login` }
+        );
+        
+        if (resetError) throw resetError;
+        
+        toast({
+          title: "Check your email",
+          description: "We've sent you a password reset link",
+        });
+      } else {
+        toast({
+          title: "Success!",
+          description: "Your password has been reset successfully",
+        });
+        
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset password",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-otp", {
+        body: { email: formData.email },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "OTP Sent!",
+        description: "A new verification code has been sent to your email",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to resend OTP",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -116,8 +227,8 @@ const ForgotPassword = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Send OTP
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? "Sending..." : "Send OTP"}
               </Button>
 
               <Link to="/login" className="flex items-center justify-center text-sm text-primary hover:underline">
@@ -144,13 +255,18 @@ const ForgotPassword = () => {
 
               <p className="text-sm text-center text-muted-foreground">
                 Didn't receive code?{" "}
-                <button type="button" className="text-primary hover:underline">
+                <button 
+                  type="button" 
+                  className="text-primary hover:underline"
+                  onClick={handleResendOTP}
+                  disabled={isLoading}
+                >
                   Resend
                 </button>
               </p>
 
-              <Button type="submit" className="w-full" size="lg">
-                Verify OTP
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? "Verifying..." : "Verify OTP"}
               </Button>
             </form>
           )}
@@ -179,8 +295,8 @@ const ForgotPassword = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Reset Password
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? "Resetting..." : "Reset Password"}
               </Button>
 
               <Link to="/login" className="flex items-center justify-center text-sm text-primary hover:underline">
