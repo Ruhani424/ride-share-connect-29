@@ -1,73 +1,27 @@
-# Welcome to your Lovable project
-
-## Project info
-
-**URL**: https://lovable.dev/projects/f37a8843-408e-4190-b0d2-1577e7de13ca
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/f37a8843-408e-4190-b0d2-1577e7de13ca) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/f37a8843-408e-4190-b0d2-1577e7de13ca) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+GoTogether – Carpool Management System
+GoTogether is a web-based carpooling platform designed to connect drivers and passengers traveling along similar routes. It helps university students, employees, and daily commuters find affordable, safe, and eco-friendly ride-sharing options. The system ensures verified user identities, secure payments, and real-time route coordination using integrated map services.
+🚗 About the Project
+GoTogether aims to solve everyday commuting problems such as high travel costs, traffic congestion, empty vehicle seats, and lack of trusted carpool partners. The platform provides a centralized, user-friendly system where drivers can post rides and passengers can book them instantly.
+The goal is to encourage resource sharing, reduce fuel consumption, and create a safe and convenient transportation network for communities.
+🎯 Key Features
+User Verification – Only verified university/organization users can register.
+Ride Posting (Drivers) – Add route, time, seats, and fare.
+Ride Searching (Passengers) – Search rides based on route, timing, and availability.
+Real-Time Mapping – Integrated location services for accurate routes and navigation.
+Secure Payments – Online payment gateway for cost-sharing.
+In-App Communication – Chat system for pick-up coordination.
+Ratings & Reviews – Build trust between drivers and passengers.
+User Dashboard – Manage rides, bookings, and history easily.
+🛠️ Tech Stack
+Frontend: HTML, CSS, JavaScript (or React)
+Backend: Node.js / Express (or any web framework you used)
+Database: MySQL / MongoDB
+APIs: Google Maps API, Payment Gateway API
+Authentication: OTP / University email verification
+🧩 System Workflow
+User registers and completes verification
+Drivers post rides with detailed route and timing
+Passengers search for and book available rides
+Secure payments are processed through the integrated gateway
+Real-time coordination happens through in-app chat and mapping
+Ratings improve safety and trust for future rides
