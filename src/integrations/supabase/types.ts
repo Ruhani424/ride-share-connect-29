@@ -149,6 +149,63 @@ export type Database = {
         }
         Relationships: []
       }
+      rides: {
+        Row: {
+          created_at: string
+          date: string
+          destination: string
+          driver_id: string
+          fare: number
+          id: string
+          origin: string
+          passenger_id: string | null
+          passengers: number
+          status: string
+          time: string
+          type: string
+          updated_at: string
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          destination: string
+          driver_id: string
+          fare: number
+          id?: string
+          origin: string
+          passenger_id?: string | null
+          passengers?: number
+          status?: string
+          time: string
+          type?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          destination?: string
+          driver_id?: string
+          fare?: number
+          id?: string
+          origin?: string
+          passenger_id?: string | null
+          passengers?: number
+          status?: string
+          time?: string
+          type?: string
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_number?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
