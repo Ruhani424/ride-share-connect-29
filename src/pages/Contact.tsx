@@ -110,7 +110,7 @@ const Contact = () => {
             </Card>
           </div>
 
-          {/* Contact Info */}
+          //Contact info//
           <div className="space-y-6">
             <Card>
               <CardContent className="p-6 space-y-6">
