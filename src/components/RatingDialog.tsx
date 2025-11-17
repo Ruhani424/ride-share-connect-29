@@ -6,6 +6,8 @@ import { Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+
+
 interface RatingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -70,7 +72,7 @@ export const RatingDialog = ({
       onOpenChange(false);
       setRating(0);
       setReview("");
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description: error.message || "Failed to submit rating",
