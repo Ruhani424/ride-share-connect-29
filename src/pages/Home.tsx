@@ -53,15 +53,15 @@ const Home = () => {
                   </div>
                 </div>
                 <Link to="/search" className="block mt-4">
-                  <Button className="w-full" size="lg">
+                  <Button className="w-full bg-purple-700 text-white hover:bg-purple-500" size="lg">
                     Search Rides
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    
                   </Button>
                 </Link>
-                <div className="text-center mt-4">
+                <div className="text-center mt-4 ">
                   <Link to="/offer-ride">
-                    <Button variant="ghost" size="sm">
-                      Or offer a ride
+                    <Button className="w-full bg-purple-700 text-white hover:bg-purple-500" size="lg">
+                      Offer ride
                     </Button>
                   </Link>
                 </div>
