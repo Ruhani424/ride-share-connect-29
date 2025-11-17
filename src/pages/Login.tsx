@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Car } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,8 +17,20 @@ const Login = () => {
     password: "",
     rememberMe: false,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/dashboard");
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validation
@@ -30,28 +43,73 @@ const Login = () => {
       return;
     }
 
-    // Simulate login - check if it's a driver account
-    const isDriver = formData.email.includes("driver"); // Mock check
-    const isVerified = Math.random() > 0.3; // Mock verification status
-    
-    if (isDriver && !isVerified) {
+    setIsLoading(true);
+    try {
+      // Sign in with Supabase
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signInError) throw signInError;
+      if (!authData.user) throw new Error("Login failed");
+
+      // Check if user has driver role
+      const { data: roles, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", authData.user.id);
+
+      if (roleError) throw roleError;
+
+      const isDriver = roles?.some(r => r.role === "driver");
+
+      // If driver, check verification status
+      if (isDriver) {
+        const { data: verification, error: verifyError } = await supabase
+          .from("driver_verifications")
+          .select("status")
+          .eq("user_id", authData.user.id)
+          .single();
+
+        if (verifyError) {
+          console.error("Error checking verification:", verifyError);
+        }
+
+        if (verification && verification.status === "pending") {
+          toast({
+            title: "Verification Pending",
+            description: "Your driver license is still under verification. You'll be notified once verified.",
+          });
+        } else if (verification && verification.status === "rejected") {
+          toast({
+            title: "Verification Rejected",
+            description: "Your driver verification was rejected. Please contact support.",
+            variant: "destructive",
+          });
+          await supabase.auth.signOut();
+          return;
+        }
+      }
+
       toast({
-        title: "Verification Pending",
-        description: "Your driver license is still under verification. You'll receive an email once verified.",
+        title: "Success!",
+        description: "Login successful. Welcome back!",
+      });
+      
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Invalid email or password",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    // Simulate login
-    toast({
-      title: "Success!",
-      description: "Login successful. Welcome back!",
-    });
-    
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 1000);
   };
 
   return (
@@ -111,8 +169,8 @@ const Login = () => {
               </Link>
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Login
+            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Login"}
             </Button>
 
             <div className="text-center text-sm">
