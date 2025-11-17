@@ -9,6 +9,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 
+
+//Contact page starts
 const Contact = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -31,7 +33,7 @@ const Contact = () => {
     }
 
     toast({
-      title: "Message Sent!",
+      title: "Message Sent !",
       description: "We'll get back to you as soon as possible.",
     });
 
