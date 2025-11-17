@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Car } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -27,7 +28,9 @@ const Signup = () => {
     termsAccepted: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validation
@@ -44,6 +47,15 @@ const Signup = () => {
       toast({
         title: "Error",
         description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters",
         variant: "destructive",
       });
       return;
@@ -67,15 +79,80 @@ const Signup = () => {
       return;
     }
 
-    // Simulate signup
-    toast({
-      title: "Success!",
-      description: "Account created successfully. Please verify your email.",
-    });
+    setIsLoading(true);
+    try {
+      // Step 1: Sign up the user
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.name,
+            phone: formData.phone,
+          },
+        },
+      });
 
-    setTimeout(() => {
-      navigate("/login");
-    }, 1500);
+      if (signUpError) throw signUpError;
+      if (!authData.user) throw new Error("User creation failed");
+
+      // Step 2: Create profile
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          id: authData.user.id,
+          full_name: formData.name,
+          phone: formData.phone,
+        });
+
+      if (profileError) throw profileError;
+
+      // Step 3: Create user role
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .insert({
+          user_id: authData.user.id,
+          role: role,
+        });
+
+      if (roleError) throw roleError;
+
+      // Step 4: If driver, create driver verification entry
+      if (role === "driver") {
+        const { error: driverError } = await supabase
+          .from("driver_verifications")
+          .insert({
+            user_id: authData.user.id,
+            license_number: formData.licenseNumber,
+            vehicle_make: formData.vehicleMake || null,
+            vehicle_model: formData.vehicleModel || null,
+            vehicle_number: formData.vehicleNumber || null,
+            years_experience: formData.experience ? parseInt(formData.experience) : null,
+            status: "pending",
+          });
+
+        if (driverError) throw driverError;
+      }
+
+      toast({
+        title: "Success!",
+        description: "Account created successfully. You can now login.",
+      });
+
+      // Navigate to login
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -237,8 +314,8 @@ const Signup = () => {
                 </label>
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Create Account
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
 
               <div className="text-center text-sm">

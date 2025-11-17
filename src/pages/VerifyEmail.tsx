@@ -44,30 +44,20 @@ const VerifyEmail = () => {
 
     setIsVerifying(true);
     try {
-      // Verify OTP in database
-      const { data: verification, error: verifyError } = await supabase
-        .from("email_verifications")
-        .select("*")
-        .eq("email", email)
-        .eq("otp", otp)
-        .eq("verified", false)
-        .gte("expires_at", new Date().toISOString())
-        .single();
+      // Call verify-otp edge function
+      const { data, error } = await supabase.functions.invoke("verify-otp", {
+        body: { email, otp },
+      });
 
-      if (verifyError || !verification) {
+      if (error) throw error;
+      if (!data.success) {
         toast({
           title: "Invalid OTP",
-          description: "The OTP is invalid or has expired",
+          description: data.error || "The OTP is invalid or has expired",
           variant: "destructive",
         });
         return;
       }
-
-      // Mark as verified
-      await supabase
-        .from("email_verifications")
-        .update({ verified: true })
-        .eq("id", verification.id);
 
       toast({
         title: "Email verified!",
@@ -88,19 +78,11 @@ const VerifyEmail = () => {
 
   const handleResendOTP = async () => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke("send-otp", {
+        body: { email },
+      });
 
-      if (!response.ok) throw new Error("Failed to resend OTP");
+      if (error) throw error;
 
       toast({
         title: "OTP Resent",
